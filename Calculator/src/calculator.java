@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -19,12 +20,13 @@ public class calculator extends JFrame {
 	private static JLabel label1;
 	private static JButton digits[] = new JButton[10];
 	private static GridBagConstraints c[] = new GridBagConstraints[10];
-	private static JButton point, add, substract, multiply, divide, equal, clean,
-			back;
+	private static JButton point, add, substract, multiply, divide, equal,
+			clean, back;
 	private static double num;
 	private static double num2;
-	private static byte op;//運算子
-	private static boolean end = false;//運算結束
+	private static byte op;// 運算子
+	private static boolean end = false;// 運算結束
+	private static final int DEF_DIV_SCALE = 10;
 
 	public calculator() {
 		label = new JLabel("0");
@@ -205,33 +207,35 @@ public class calculator extends JFrame {
 
 		// 輸出數值到顯示器
 		private void output_digit(JButton button) {
-			if(label.getText() == "0" || end == true){
+			if (label.getText() == "0" || end == true) {
 				label.setText(button.getText());
 				end = false;
-			}
-			else
+			} else
 				label.setText(label.getText() + button.getText());
 		}
-		//運算
+
+		// 運算
 		private void operation(byte op) {
 			num2 = Double.parseDouble(label.getText());
+			BigDecimal b1 = new BigDecimal(Double.toString(num));
+			BigDecimal b2 = new BigDecimal(Double.toString(num2));
+
 			switch (op) {
 			case 1:
-				num += num2;
+				num = b1.add(b2).doubleValue();
 				break;
 			case 2:
-				num -= num2;
+				num = b1.subtract(b2).doubleValue();
 				break;
 			case 3:
-				num *= num2;
+				num = b1.multiply(b2).doubleValue();
 				break;
 			case 4:
-				num /= num2;
+				num = b1.divide(b2,DEF_DIV_SCALE,BigDecimal.ROUND_HALF_UP).doubleValue();
 				break;
 			default:
 				num = num2;
 			}
-			
 		}
 	}
 
