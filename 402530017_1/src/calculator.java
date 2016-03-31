@@ -17,15 +17,16 @@ import javax.swing.border.Border;
 
 public class calculator extends JFrame {
 	private static JLabel label;
-	private static JLabel label1;
+	private static JLabel label1; 
 	private static JButton digits[] = new JButton[10];
 	private static GridBagConstraints c[] = new GridBagConstraints[10];
 	private static JButton point, add, substract, multiply, divide, equal,
 			clean, back;
 	private static double num;
 	private static double num2;
-	private static byte op;// 運算子
-	private static boolean end = false;// 運算結束
+	private static byte op;// operator
+	private static byte error = 0;// error or not
+	private static boolean end = false;
 	private static final int DEF_DIV_SCALE = 10;
 
 	public calculator() {
@@ -40,7 +41,7 @@ public class calculator extends JFrame {
 		Border border = BorderFactory.createLineBorder(Color.gray);
 		panel.setBorder(border);
 		panel.setLayout(new FlowLayout());
-		panel.setPreferredSize(new Dimension(210, 60));
+		panel.setPreferredSize(new Dimension(220, 60));
 		panel.add(label1);
 		panel.add(label);
 
@@ -108,14 +109,14 @@ public class calculator extends JFrame {
 		c_divide.fill = GridBagConstraints.BOTH;
 		divide.addActionListener(new ButtonHandeler());
 
-		clean = new JButton("c");
+		clean = new JButton("C");
 		GridBagConstraints c_c = new GridBagConstraints();
 		c_c.gridx = 4;
 		c_c.gridy = 2;
 		c_c.fill = GridBagConstraints.BOTH;
 		clean.addActionListener(new ButtonHandeler());
 
-		back = new JButton("←");
+		back = new JButton("<==");
 		GridBagConstraints c_back = new GridBagConstraints();
 		c_back.gridx = 4;
 		c_back.gridy = 1;
@@ -153,7 +154,7 @@ public class calculator extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			JButton button = (JButton) e.getSource();
 
-			// 處理數值1-9
+			// print 1~9
 			for (int i = 0; i <= 9; i++) {
 				if (button == digits[i]) {
 					output_digit(digits[i]);
@@ -164,78 +165,121 @@ public class calculator extends JFrame {
 				num = 0;
 				num2 = 0;
 				op = 0;
+				error = 0;
 				label.setText("0");
 				label1.setText("");
-			} else if (button == back) {// 刪字
+			} else if (button == back) {// backspace
 				label.setText(""
 						+ label.getText().substring(0,
 								label.getText().length() - 1));
 				if (label.getText().length() == 0)
 					label.setText("0");
-			} else if (button == point) {// 小數點
+			} else if (button == point) {// point
 				if (label.getText().contains(".") == false)
 					label.setText("" + label.getText() + ".");
-			} else if (button == add) {// 加
+			} else if (button == add) {// add
 				operation(op);
-				label1.setText(num + " + ");
-				label.setText("0");
-				op = 1;
-			} else if (button == substract) {// 減
+				if (error == 0) {
+					label1.setText(num + " + ");
+					label.setText("0");
+					op = 1;
+				} else
+					error_message();
+			} else if (button == substract) {// substract
 				operation(op);
-				label1.setText(num + " - ");
-				label.setText("0");
-				op = 2;
-			} else if (button == multiply) {// 乘
+				if (error == 0) {
+					label1.setText(num + " - ");
+					label.setText("0");
+					op = 2;
+				} else
+					error_message();
+			} else if (button == multiply) {// multiply
 				operation(op);
-				label1.setText(num + " * ");
-				label.setText("0");
-				op = 3;
-			} else if (button == divide) {// 除
+				if (error == 0) {
+					label1.setText(num + " * ");
+					label.setText("0");
+					op = 3;
+				} else
+					error_message();
+			} else if (button == divide) {// divide
 				operation(op);
-				label1.setText(num + " / ");
-				label.setText("0");
-				op = 4;
+				if (error == 0) {
+					label1.setText(num + " / ");
+					label.setText("0");
+					op = 4;
+				} else
+					error_message();
 			} else if (button == equal) {
 				operation(op);
-				label.setText(Double.toString(num));
-				label1.setText("");
-				num = 0;
-				num2 = 0;
-				end = true;
+				if (error == 0) {
+					label.setText(Double.toString(num));
+					label1.setText("");
+					num = 0;
+					num2 = 0;
+					op = 0;
+					end = true;
+					error = 0;
+				} else
+					error_message();
 			}
 		}
 
-		// 輸出數值到顯示器
+		// print1~9
 		private void output_digit(JButton button) {
 			if (label.getText() == "0" || end == true) {
 				label.setText(button.getText());
 				end = false;
-			} else
-				label.setText(label.getText() + button.getText());
+			} else {
+				if (label.getText().length() >= 28) {
+				} else
+					label.setText(label.getText() + button.getText());
+			}
 		}
 
-		// 運算
-		private void operation(byte op) {
-			num2 = Double.parseDouble(label.getText());
+		// do operation
+		private void operation(byte op) throws ArithmeticException {
+			if (label.getText() != "Error")
+				num2 = Double.parseDouble(label.getText());
+			else {
+				num = 0;
+				num2 = 0;
+			}
+
 			BigDecimal b1 = new BigDecimal(Double.toString(num));
 			BigDecimal b2 = new BigDecimal(Double.toString(num2));
 
-			switch (op) {
-			case 1:
-				num = b1.add(b2).doubleValue();
-				break;
-			case 2:
-				num = b1.subtract(b2).doubleValue();
-				break;
-			case 3:
-				num = b1.multiply(b2).doubleValue();
-				break;
-			case 4:
-				num = b1.divide(b2,DEF_DIV_SCALE,BigDecimal.ROUND_HALF_UP).doubleValue();
-				break;
-			default:
-				num = num2;
+			try {
+				switch (op) {
+				case 1:
+					num = b1.add(b2).doubleValue();
+					break;
+				case 2:
+					num = b1.subtract(b2).doubleValue();
+					break;
+				case 3:
+					num = b1.multiply(b2).doubleValue();
+					break;
+				case 4:
+					num = b1.divide(b2, DEF_DIV_SCALE, BigDecimal.ROUND_HALF_UP)
+							.doubleValue();
+					break;
+				default:
+					num = num2;
+				}
+			} catch (ArithmeticException ae) {
+				System.out.println(ae);
+				error = 1;
 			}
+		}
+
+		private void error_message() {
+			label.setText("Error");
+			label1.setText("");
+			num = 0;
+			num2 = 0;
+			op = 0;
+			end = true;
+			error = 0;
 		}
 	}
 
