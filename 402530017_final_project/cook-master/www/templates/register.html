@@ -1,0 +1,49 @@
+<ion-modal-view>
+  <ion-header-bar class="bar-calm background-B4E065">
+    <h1 class="title">Register</h1>
+    <div class="buttons">
+      <button class="button button-clear" ng-click="closeRegister()">
+        <i class="ion-close-round margin-right-10 text-align-center"></i>
+      </button>
+    </div>
+  </ion-header-bar>
+  <ion-content>
+    <div ng-controller="RegisterCtrl">
+      <form name="register_form">
+        <div class="list">
+          <label class="item item-input">
+            <i class="icon ion-android-contact margin-right-10 text-align-center"></i>
+            <span class="input-label">Email*</span>
+            <input type="email" id="email" name="email" ng-model="register_data.email" placeholder="lizzy@cook.com" required>
+          </label>
+          <label class="item item-input">
+            <i class="icon ion-locked margin-right-10 text-align-center"></i>
+            <span class="input-label">Password*</span>
+            <input type="password" id="password" name="password" ng-model="register_data.password" pw-account-check="email" placeholder="Password" required ng-minlength="8" ng-maxlength="20">
+          </label>
+          <label class="item item-input">
+            <i class="icon ion-checkmark-circled margin-right-10 text-align-center"></i>
+            <span class="input-label">Confirm Password*</span>
+            <input type="password" name="passwd_check" ng-model="passwd_check" pw-check="password" placeholder="Enter your password again">
+          </label>
+        </div>
+
+          <div class="alert" ng-show="register_form.email.$dirty && register_form.password.$dirty">
+            <div ng-show="register_form.$error.required">You must enter your email and password.</div>
+          </div>
+          <div class="alert" ng-show="register_form.password.$dirty">
+            <div ng-show="register_form.password.$error.minlength || register_form.password.$error.maxlength">The length of password must between 8 to 20.</div>
+            <div ng-show="register_form.password.$error.pwsame">Your password can't be the same with your account.</div>
+          </div>
+          <div class="alert" ng-show="register_form.passwd_check.$dirty">
+            <div ng-show="register_form.passwd_check.$error.pwmatch">密碼與確認密碼不一致</div>
+          </div>
+          <div class="alert" ng-show="register_form.email.$dirty">
+            <div ng-show="register_form.email.$error.email">Wrong format of email</div>
+          </div>
+          <input id="submit_button" type="button" value="Submit" class="button button-calm login_button margin-bottom-20" ng-click="insertdata()">
+        </div>
+      </form>
+    </div>
+  </ion-content>
+</ion-modal-view>
